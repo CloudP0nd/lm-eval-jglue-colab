@@ -2,14 +2,21 @@
 
 Google Colab 上で [EleutherAI lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) を使い、**JGLUE** (Japanese General Language Understanding Evaluation) の 4 タスクを評価するためのノートブックです。
 
+## 必要な lm-eval バージョン
+
+- **lm-eval >= 0.4.6** 必須 (JGLUE タスクは v0.4.6 で `japanese_leaderboard` 配下として追加されました — [PR #2439](https://github.com/EleutherAI/lm-evaluation-harness/pull/2439))
+- v0.4.5 以前には JGLUE タスクが含まれていません
+
 ## 対象タスク
 
-| Task ID | タスク | 評価指標 |
-|---|---|---|
-| `jcommonsenseqa` | 多肢選択 (常識推論) | Accuracy |
-| `jnli` | 多肢選択 (自然言語推論) | Accuracy |
-| `jsquad` | 抽出型 QA | Exact Match / F1 |
-| `marc_ja` | 多肢選択 (感情分析) | Accuracy |
+| Task ID | タスク | 出力形式 | 評価指標 | few-shot デフォルト |
+|---|---|---|---|---|
+| `ja_leaderboard_jcommonsenseqa` | 多肢選択 (常識推論) | multiple_choice | Accuracy | 3 |
+| `ja_leaderboard_jnli` | 多肢選択 (自然言語推論) | multiple_choice | Accuracy | 3 |
+| `ja_leaderboard_jsquad` | 抽出型 QA | generate_until | Exact Match | 2 |
+| `ja_leaderboard_marc_ja` | 多肢選択 (感情分析・2値) | multiple_choice | Accuracy | 3 |
+
+> **注意**: ベア ID (`jcommonsenseqa`, `jnli`, `jsquad`, `marc_ja`) は現行 lm-eval では使えません。必ず `ja_leaderboard_*` プレフィックスを付けてください。
 
 ## 使い方
 
@@ -22,13 +29,13 @@ Google Colab 上で [EleutherAI lm-evaluation-harness](https://github.com/Eleuth
 ### デフォルト設定
 
 - **モデル**: `rinna/japanese-gpt2-small` (Colab Free の T4 で動作確認済み)
-- **タスク**: JGLUE 全 4 タスク
-- **Few-shot**: 0-shot (JGLUE 公式設定)
+- **タスク**: JGLUE 全 4 タスク (`ja_leaderboard_*`)
+- **Few-shot**: 0-shot (JGLUE 論文準拠。`NUM_FEW_SHOT=None` にすると各タスク yaml デフォルトの 2〜3 shot になります)
 - **Batch size**: 8
 
 ## 推奨モデル例
 
-| モーダル | モデル | 想定 GPU |
+| サイズ | モデル | 想定 GPU |
 |---|---|---|
 | Small | `rinna/japanese-gpt2-small` | T4 (Free) |
 | Medium | `line-corporation/japanese-large-lm-1.7b` | T4 / A10G |
@@ -42,17 +49,20 @@ Google Colab 上で [EleutherAI lm-evaluation-harness](https://github.com/Eleuth
 
 | 症状 | 対処 |
 |---|---|
+| `TaskNotFound` | `lm_eval --tasks list` で正確なタスク名を確認。`ja_leaderboard_*` プレフィックス必須 |
+| `lm-eval` のバージョンが古い | `!pip install -U "lm-eval>=0.4.6"` で更新 |
 | `OOM` | `BATCH_SIZE` を下げる / より小さいモデルを使う |
 | `trust_remote_code` エラー | ノートブックの設定で `TRUST_REMOTE_CODE = True` にする |
-| `TaskNotFound` | `lm_eval --tasks list` で正確なタスク名を確認 (バージョン依存) |
-| `jsquad` の EM が常に 0 | `--gen_kwargs do_sample=False` を追加 |
-| MARC-ja タスクが見つからない | `marc_ja` (アンダースコア) を使用 |
+| `jsquad` の EM が常に 0 | `generate_until` 型タスクです。非インストラクトモデル (gpt2 等) では指示フォーマットに追従できません。インストラクトモデルを使うか `--gen_kwargs do_sample=False` を追加 |
+| MARC-ja タスクが見つからない | `ja_leaderboard_marc_ja` (プレフィックス + アンダースコア) を使用 |
 
 ## 参考文献
 
 - lm-evaluation-harness: https://github.com/EleutherAI/lm-evaluation-harness
 - JGLUE paper: https://aclanthology.org/2022.acl-long.172/
-- JGLUE HF dataset: https://huggingface.co/datasets/JGLUE
+- JGLUE HF dataset: https://huggingface.co/datasets/Rakuten/JGLUE
+- Japanese Leaderboard タスク yaml: https://github.com/EleutherAI/lm-evaluation-harness/tree/main/lm_eval/tasks/japanese_leaderboard
+- Japanese Leaderboard 追加 PR (#2439): https://github.com/EleutherAI/lm-evaluation-harness/pull/2439
 
 ## License
 
