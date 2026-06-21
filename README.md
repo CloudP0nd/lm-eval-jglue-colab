@@ -31,7 +31,7 @@ Google Colab 上で [EleutherAI lm-evaluation-harness](https://github.com/Eleuth
 - **モデル**: `rinna/japanese-gpt2-small` (Colab Free の T4 で動作確認済み)
 - **タスク**: JGLUE 全 4 タスク (`ja_leaderboard_*`)
 - **Few-shot**: 0-shot (JGLUE 論文準拠。`NUM_FEW_SHOT=None` にすると各タスク yaml デフォルトの 2〜3 shot になります)
-- **Batch size**: 8
+- **Batch size**: `auto` (VRAM に収まる最大サイズを自動探索)
 
 ## 推奨モデル例
 
@@ -51,7 +51,7 @@ Google Colab 上で [EleutherAI lm-evaluation-harness](https://github.com/Eleuth
 |---|---|
 | `TaskNotFound` | `lm_eval --tasks list` で正確なタスク名を確認。`ja_leaderboard_*` プレフィックス必須 |
 | `lm-eval` のバージョンが古い | `!pip install -U "lm-eval>=0.4.6"` で更新 |
-| `OOM` | `BATCH_SIZE` を下げる / より小さいモデルを使う |
+| `OOM` | `BATCH_SIZE = "auto:4"` のように上限を設定 / より小さいモデルを使う |
 | `trust_remote_code` エラー | ノートブックの設定で `TRUST_REMOTE_CODE = True` にする |
 | `jsquad` の EM が常に 0 | `generate_until` 型タスクです。非インストラクトモデル (gpt2 等) では指示フォーマットに追従できません。インストラクトモデルを使うか `--gen_kwargs do_sample=False` を追加 |
 | MARC-ja タスクが見つからない | `ja_leaderboard_marc_ja` (プレフィックス + アンダースコア) を使用 |
